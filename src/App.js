@@ -22,13 +22,15 @@ export default function App() {
   }, [repositories]);
 
   async function handleLikeRepository(id) {
-    console.log(id);
     const response = await api.post("repositories/" + id + "/like");
-    console.log(response.data);
+
     const project = response.data;
+
     let updatedList = Array.from(repositories);
+
     const index = repositories.findIndex((repository) => repository.id === id);
 
+    //substitui o projeto
     updatedList.splice(index, 1, project);
 
     setRepositories(updatedList);
@@ -38,38 +40,43 @@ export default function App() {
     <>
       <StatusBar barStyle="light-content" backgroundColor="#7159c1" />
       <SafeAreaView style={styles.container}>
-        {repositories.map((repository) => (
-          <View key={repository.id} style={styles.repositoryContainer}>
-            <Text style={styles.repository}>{repository.title}</Text>
-            <View style={styles.techsContainer}>
-              {repository.techs.map((tech, index) => (
+        <Text style={styles.pageTitle}>Repositórios</Text>
+        <FlatList
+          data={repositories}
+          keyExtractor={(repository) => repository.id}
+          renderItem={({ item: repository }) => (
+            <View key={repository.id} style={styles.repositoryContainer}>
+              <Text style={styles.repository}>{repository.title}</Text>
+              <View style={styles.techsContainer}>
+                {repository.techs.map((tech, index) => (
+                  <Text
+                    key={`tech-${repository.id}-${index}`}
+                    style={styles.tech}
+                  >
+                    {tech}
+                  </Text>
+                ))}
+              </View>
+
+              <View style={styles.likesContainer}>
                 <Text
-                  key={`tech-${repository.id}-${index}`}
-                  style={styles.tech}
+                  style={styles.likeText}
+                  testID={`repository-likes-${repository.id}`}
                 >
-                  {tech}
+                  {repository.likes} curtida{repository.likes == 1 ? "" : "s"}
                 </Text>
-              ))}
-            </View>
+              </View>
 
-            <View style={styles.likesContainer}>
-              <Text
-                style={styles.likeText}
-                testID={`repository-likes-${repository.id}`}
+              <TouchableOpacity
+                style={styles.button}
+                onPress={() => handleLikeRepository(repository.id)}
+                testID={`like-button-${repository.id}`}
               >
-                {repository.likes} curtidas
-              </Text>
+                <Text style={styles.buttonText}>Curtir</Text>
+              </TouchableOpacity>
             </View>
-
-            <TouchableOpacity
-              style={styles.button}
-              onPress={() => handleLikeRepository(repository.id)}
-              testID={`like-button-${repository.id}`}
-            >
-              <Text style={styles.buttonText}>Curtir</Text>
-            </TouchableOpacity>
-          </View>
-        ))}
+          )}
+        />
       </SafeAreaView>
     </>
   );
@@ -79,6 +86,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#7159c1",
+  },
+  pageTitle: {
+    fontSize: 40,
+    fontWeight: "bold",
+    color: "#FFF",
+    textAlign: "center",
+    padding: 20,
   },
   repositoryContainer: {
     marginBottom: 15,
